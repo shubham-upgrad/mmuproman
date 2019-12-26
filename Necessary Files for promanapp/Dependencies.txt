@@ -1,0 +1,11 @@
+<dependencies>
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-web</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>io.swagger</groupId>
+       <artifactId>swagger-annotations</artifactId>
+       <version>1.5.18</version>
+   </dependency>
+</dependencies>

@@ -1,0 +1,10 @@
+proman\service\business\SignupBusinessService.class
+proman\service\ServiceConfiguration.class
+proman\service\business\UserAdminBusinessService.class
+proman\service\entity\RoleEntity.class
+proman\service\dao\UserDao.class
+proman\service\entity\UserEntity.class
+proman\service\exceptions\ResourceNotFoundException.class
+proman\service\encryption\PasswordCryptographyProvider.class
+proman\service\entity\UserAuthTokenEntity.class
+proman\service\type\UserStatus.class

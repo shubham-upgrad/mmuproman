@@ -1,0 +1,57 @@
+POSTGRESQL SETUP :
+
+1. Install Postgres using setup(download it from official site of postgres)
+
+2. Testing the install and working :
+	
+	i. Open SQL Shell(Start Menu --> Postgres 10---> SQL Shell)
+			You should see something like Server[localhost] :
+		a. Press enter a couple of times to connect to localhost at port 5432 with 
+			database postgres and user postgres(you may have to type in the password)
+		SUCCESS : when you see postgres=#(where postgres is the database name)
+		
+		*****WHAT IF WE FAILED ??????*****(THE ERRORS)
+
+		FAILURE 1 : chcp is not an internal or external command
+			SOLUTION : Path variables are to be set
+						In PATH variable add following three values :
+						a. Path to the Postgres bin folder
+							example : C:\Program Files\PostgreSQL\10\bin
+						b. Path to the system root : %SystemRoot%
+						c. Path to the system32 folder : %SystemRoot%\system32
+							(NOTE : The slash is back slash and its kinda important)
+		FAILURE 2 : Is the server running and listening on port 5432?					SOLUTION : We need to start the server
+							i. Press Window_Key+R to open run
+							ii. Type "cmd" and press enter
+							iii. In that enter "pg_ctl start"
+							iv. This should start the server
+				WHAT IF IT DIDN'T?
+					SUB-FAILURE 1 : Database cluster is not initialized(or something like that)
+						SOLUTION : Set PGDATA environment variable 
+										i. Create a new folder anywhere
+										ii. Copy the path of that folder and paste  	it in PGDATA value part
+										iii. got to that folder again and in address bar(from where you copied the path) clear everything and type "cmd"
+										iv. This opens the command prompt window
+										v. Type "pg_ctl initdb" 
+										vi. This makes your new folder a database cluster
+					NOW OPEN ANOTHER CMD AND TRY STARTING THE SERVER AGAIN
+		
+		FAILURE 3 : After solving above failures we try to reconnect from SQL Shell
+					(Pressing enter 4-5 times)
+					But you get FATAL : Role postgres doesn't exist
+				SOLUTION 1: i.close sql shell and the cmd after pressing Ctrl+C in cmd(basically stopping the server)
+							ii. Open another cmd and type in the following
+								"createuser -s -U (Username of you system) -P postgres"
+								i. it will ask for password twice and will create a super user postgres with given password
+				SOLUTION 2 : i. Open pgAdmin 4
+							 ii. Create a new Server by right clicking on Server(left side)
+							 iii. Provide Server name, host (=localhost), username (= username of your PC), password(= leave empty)
+							 iv. Click save
+							 v. Open the server
+							 vi. Right click on Login/Group Roles and create a new Role
+							 	i. Provide name, password, and in privileges tab set every option to yes
+				---------Done-------------
+				Try Reconnecting with the postgres user by pressing enter and it should connect now and you will see postgres=#
+				Then go to pgAdmin....delete the server you made with local machine user and re-create a server with user postgres in pgAdmin			 	
+
+										

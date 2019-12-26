@@ -1,0 +1,365 @@
+Project setup instructions :
+
+**** Replace mmuproman with the project name of your project ****
+
+NOTE : The configs specified instructions are NOT THE POM FILES BUT THE 
+CODE YOU ARE SUPPOSED TO ADD IN THEM
+1. Setup :
+	i. Created 3 modules :
+		mmuproman-api,mmuproman-service,mmuproman-db
+	ii. Added required dependecies in main project POM(ii.-A)
+	iii. Setting up API Module :
+		1. Created endpoints "directory" in "resources"(src/main/resources) to store endpoint specs
+			- Added signup.json
+		2. Created application.yaml	in the resources folder
+		3. Added some plugins,configs and dependencies to the "api pom"(iii.-A)
+
+   iv. Setting up DB Module : (For creating the tables and database and schema required in our app)
+   			(This module mainly has SQLs which will executed during the build process to setup database)
+   		0. Created the database in postgres(mmuproman)<--------(because SQL included doesn't have create db command)
+   		1. In resources folder we created "config" and "sql" directories
+   		2. Added sql files(to create database tables) into the sql directory
+   		3. Created localhost.properties file in config (change database name and username and password) iv.-A
+   		4. Added required configurations in the "db-pom"(iv-B)
+
+   	v. Setting up the Service module :
+   		1. Add required dependencies in the service pom(v.-A)
+	
+	vi. Front End Setup(Creating Docket) - Optional    [Because you can use other ways to test your API]
+		1. Create "api" package in src/main/java of "api module"
+		2. In api create "config" and "controller"
+		3. In config create a class SwaggerConfiguration(vi.-A)
+	vii. Make sure that in main project's POM the order of modules is(vii.-A) :
+		1. db   
+		2. service
+		3. api	
+	viii. Run the following command in terminal :
+			mvn clean install -Psetup -DskipTests
+
+		Make sure that all your Tests folders are empty(or the code in them is commented if project stub is provided)
+	ix. Making service classes available to controller module :
+		1. In your Controller - API , add the dependency of service module :
+				groupId=the group id in project pom
+				artifactId = the artifact ID in service module pom.xml
+				version = version in service-pom.xml
+		2. In you service module...create a class named ServiceConfiguretaion(name may be any valid class name)
+			annotate it with :
+			@Configuration
+			@ComponentScan
+			@EntityScan("provide-the-fully-qualified-package-name-which-contains entity classes") Example : @EntityScan("proman.service.entity")
+		3. Add @Import({ServiceConfiguration.class}) below your @SpringBootApplication	annotation so that spring knows that service config is to be
+			included.		
+	---------Setup complete----------	
+2. Create controllers to test	
+
+-------------------------------------------------------------------------------------
+ii.-A :
+<parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.5.RELEASE</version>
+    </parent>
+    <dependencies>
+        <dependency> // This is for working with swagger-generated endpoint specification
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.6.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency> // This is for testing the REST Endpoints
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.6.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency> // For Hibernate
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.2</version>
+        </dependency>
+        <dependency> // For using ORM(JPA)
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+        </dependency>
+    </dependencies>
+
+iii.-A :
+
+<dependencies>
+        <dependency>
+            <groupId>proman</groupId>
+            <artifactId>promanservice</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency> // The api module will be interacting with the outside world over web
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency> // We will be using Swagger UI to test our endpoints so this would be needed
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.5.18</version>
+        </dependency>
+        <dependency>
+            <groupId>proman</groupId>
+            <artifactId>promanservice</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency> // We will using swagger to generate Request/Response Models from Endpoint Specification
+        			// Example : We will obtain SignupUserRequest,SignupUserResponse and UserStatusType
+        			// from signup.json
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId> 
+            <version>2.6.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency> // We will be using Swagger UI to test our endpoints so this would be needed
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.6.1</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.swagger</groupId>
+                    <artifactId>swagger-codegen-maven-plugin</artifactId>
+                    <version>2.3.1</version>
+                    <configuration>
+                        <output>${project.build.directory}/generated-sources</output>
+                        <language>spring</language>
+                        <library>spring-boot</library>
+                        <generateApis>false</generateApis>
+                        <generateModels>true</generateModels> 
+                        <modelPackage>promanapp.api.model</modelPackage>
+                        <configOptions>
+                            <java8>true</java8>
+                            <sourceFolder>.</sourceFolder>
+                            <dateLibrary>java8</dateLibrary>
+                        </configOptions>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.swagger</groupId>
+                        <artifactId>swagger-annotations</artifactId>
+                        <version>1.5.18</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.swagger</groupId>
+                        <artifactId>swagger-codegen-generators</artifactId>
+                        <version>1.0.0-rc0</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>signup</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/endpoints/signup.json</inputSpec>
+                            <language>spring</language>
+                        </configuration>
+                    </execution>
+                    
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+iv.-A :
+# environment properties for local development
+
+server.host = localhost
+server.port = 5432
+
+database.name = postgres(replace it with DB YOU are using)
+database.user = postgres(Apna daalo)
+database.password = postgres@123(Apna daalo)
+
+
+iv.-B :
+<properties> <!-- Variable declaration in POM -->
+    <sql-maven-plugin.version>1.5</sql-maven-plugin.version>
+    <postgresql.driver.version>42.2.2</postgresql.driver.version>
+    <postgresql.driver.name>org.postgresql.Driver</postgresql.driver.name>
+    <sql.path>${basedir}/src/main/resources/sql</sql.path>
+</properties>
+<build>
+        <finalName>${project.artifactId}</finalName>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0-alpha-2</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>${basedir}/src/main/resources/config/localhost.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>sql-maven-plugin</artifactId>
+                <version>${sql-maven-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.driver.version}</version>
+                    </dependency>
+
+
+
+                </dependencies>
+
+                <configuration>
+                    <driver>${postgresql.driver.name}</driver>
+                    <url>jdbc:postgresql://${server.host}:${server.port}/${database.name}</url>
+                    <username>${database.user}</username>
+                    <password>${database.password}</password>
+                    <autocommit>true</autocommit>
+                    <onError>abort</onError>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- database setup -->
+<!--        Command to run this profile : mvn clean install -Psetup -DskipTests -->
+        <profile>
+            <id>setup</id>
+            <activation> <!-- NOT ACTIVE BY DEFAULT you will have to use -P switch-->
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>sql-maven-plugin</artifactId>
+                        <version>${sql-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>db-setup</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <orderFile>none</orderFile>
+                                    <srcFiles>
+                                        <srcFile>${sql.path}/db-setup.sql</srcFile>
+                                        <srcFile>${sql.path}/db-setup-roles.sql</srcFile>
+                                        <srcFile>${sql.path}/db-setup-users.sql</srcFile>
+                                        <srcFile>${sql.path}/db-seed-data.sql</srcFile>
+                                    </srcFiles>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+v.-A :
+<dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId> 
+            <version>3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId> 
+            <version>3.4.0</version>
+        </dependency>
+    </dependencies>
+
+vi.-A :
+package api.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+@Configuration
+@EnableSwagger2
+public class SwaggerConfiguration {
+     @Bean
+     public Docket swaggerDocket(){
+         return new Docket(DocumentationType.SWAGGER_2).select().apis(RequestHandlerSelectors
+                 .basePackage("api.controllers")).paths(PathSelectors.any()).build();
+     }
+
+}
+
+vii.-A :
+<modules>
+        <module>mmuproman-db</module>
+        <module>mmuproman-service</module>
+        <module>mmuproman-api</module>
+
+    </modules>
